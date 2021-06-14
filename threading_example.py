@@ -12,22 +12,34 @@ import random #import random library
 import datetime #import datetime library
 import time #import time library
 
+subscriber_dict = {}
 
 def on_message(client, userdata, message):  #callback function to receive every published message
     global subscriber_dict
     subscriber_dict = json.loads(str(message.payload.decode("utf-8"))) #convert received json string format into python dict
     print("message received: ", subscriber_dict) #print received message
+        '''
+        
+    1. Lösung
+    if (subscriber_dict == FahrzeugID)
+        todo....
+    ifelse (subscriber_dict == Garage)    
+        
+    '''
 
 broker_address="983072be-6928-4aa5-94db-b538ea35100f.ka.bw-cloud-instance.org" #broker adress
-client = mqtt.Client("Manger2") #create new instance
+client = mqtt.Client("Manger3") #create new instance
 client.on_message=on_message  #attach on_message function to a callback function
 client.connect(broker_address) #connect to broker
 client.loop_start() #start the client loop to make it always running
 client.subscribe("IoTParking/Car") #subscribe to topic
 client.subscribe("IoTParking/Garage") #subscribe to topic
 
+
 try:
-    while True:      
+    while True:  
+        print("In Loop received: ", subscriber_dict)
+
         timestamp = str(datetime.datetime.now()) #define timestamp in string format
         rvalue = str(random.randrange(0,10)) #define random value
         publisher_dict = {"value":rvalue, "time":timestamp} #define publisher_dict as python dict
