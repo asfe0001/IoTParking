@@ -1,0 +1,38 @@
+#ParkraumÃ¼berwachung
+import paho.mqtt.client as mqtt
+import time 
+import json 
+from random import randrange, uniform
+
+mqttBroker = "983072be-6928-4aa5-94db-b538ea35100f.ka.bw-cloud-instance.org"
+client = mqtt.Client("Maurice")
+client.connect(mqttBroker)
+
+try:
+    while True:
+       Parkreihe_Zustand = [0,0,0,0,0,0,0,0]
+       Ladestation_Zustand = [0,0,0,0,0,0,0,0]
+       
+       print("update") 
+       
+       for i in range(0, 8):
+           Parkreihe_Zustand[i] = int(input("P")) #randrange(2)     
+           Ladestation_Zustand[i] = int(input("L")) #randrange(2)    
+           
+       publisher_dict = {
+             "Parkreihe Zustand": Parkreihe_Zustand,
+             "Ladestation Zustand": Ladestation_Zustand
+             }
+    
+       publisher_json1 = json.dumps(publisher_dict)
+       # publisher_json2 = json.dumps(Ladestation_Zustand) 
+    
+       client.publish("IoTParking/Garage",publisher_json1)
+       # client.publish("IOTParking/Garage",publisher_json1)
+       print("Parkreihe_Zustand:",publisher_json1)
+       # print("Ladestation_Zustand:",publisher_json2)
+       #time.sleep(30)
+       
+except KeyboardInterrupt:
+    print("process interrupted by a keyboard input")
+    print("process stop")
