@@ -4,3 +4,4 @@ IoT-Parking-Projekt:
 * Ferhat Aslan
 * Maurice Forneck 
 * Timo Norberg
+* Nic Rischette
