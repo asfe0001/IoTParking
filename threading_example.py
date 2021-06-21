@@ -12,28 +12,29 @@ import random #import random library
 import datetime #import datetime library
 import time #import time library
 
+Topics = [("IoTParking/Car",0),("IoTParking/Garage",0)]
+
 subscriber_dict = {}
 
-def on_message(client, userdata, message):  #callback function to receive every published message
-    global subscriber_dict
-    subscriber_dict = json.loads(str(message.payload.decode("utf-8"))) #convert received json string format into python dict
-    print("message received: ", subscriber_dict) #print received message
-        '''
-        
-    1. Lösung
-    if (subscriber_dict == FahrzeugID)
-        todo....
-    ifelse (subscriber_dict == Garage)    
-        
-    '''
-
+#def on_message(client, userdata, message):  #callback function to receive every published message
+#    global subscriber_dict
+#    subscriber_dict = json.loads(str(message.payload.decode("utf-8"))) #convert received json string format into python dict
+#    print("message received: ", subscriber_dict) #print received message
+    
+    
+def test1(client, userdata, message):
+    print ("test 1")
+def test2(client, userdata, message):
+    print ("test 2")
+ 
 broker_address="983072be-6928-4aa5-94db-b538ea35100f.ka.bw-cloud-instance.org" #broker adress
 client = mqtt.Client("Manger3") #create new instance
-client.on_message=on_message  #attach on_message function to a callback function
+#client.on_message=on_message  #attach on_message function to a callback function
 client.connect(broker_address) #connect to broker
+client.message_callback_add("IoTParking/Car", test1)
+client.message_callback_add("IoTParking/Garage", test2)
 client.loop_start() #start the client loop to make it always running
-client.subscribe("IoTParking/Car") #subscribe to topic
-client.subscribe("IoTParking/Garage") #subscribe to topic
+client.subscribe(Topics) #subscribe to topic
 
 
 try:
