@@ -1,0 +1,96 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Mon Jun 21 13:18:11 2021
+
+@author: timo_
+"""
+
+#!usr/bin/python3 #shebang line
+import paho.mqtt.client as mqtt #import paho-mqtt as mqtt client
+import json #import json library
+import time
+
+
+Parkreihe_Zustand=[0,0,0,0,0,0,0,0]                                         #default
+Parkreihe_Ladestation = [True,True,True,True,True,True,True,True]           #default
+Parkplatz_ID = [-1,-1,-1,-1,-1,-1,-1,-1]                                    #default                
+Ladestation = True                                                          #default
+Zeit_Beginn = [00.00,00.00,00.00,00.00,00.00,00.00,00.00,00.00]             #default
+Zeit_Ende = [01.00,01.00,01.00,01.00,01.00,01.00,01.00,01.00]               #default
+broker_address="983072be-6928-4aa5-94db-b538ea35100f.ka.bw-cloud-instance.org"
+Fahrzeug_ID = -1                                                            #default
+
+Topics = [("IoTParking/Car",0),("IoTParking/Garage",0)]
+subscriber_dict_car = {}
+subscriber_dict_garage = {}
+
+def pub_frei(Parkplatz,F_ID):
+    publisher_dict= {"Fahrzeug_ID":F_ID, "Parklplatz_frei":True, "Parkplatz":Parkplatz}
+    publisher_json = json.dumps(publisher_dict) #convert publisher_dict into json string format
+    client.publish("IoTParking/Assignment",publisher_json) #publish message
+    print ("message published: ", publisher_json) #print published message
+    
+def pub_nfrei(F_ID):
+    publisher_dict= {"Fahrzeug_ID":F_ID, "Parklplatz_frei":False, "Parkplatz":-1}
+    publisher_json = json.dumps(publisher_dict) #convert publisher_dict into json string format
+    client.publish("IoTParking/Assignment",publisher_json) #publish message
+    print ("message published: ", publisher_json) #print published message
+    
+def callback_car(client, userdata, message):  #callback function to receive every published message
+    global subscriber_dict_car
+    global Fahrzeug_ID
+    global Ladestation
+    subscriber_dict_car = json.loads(str(message.payload.decode("utf-8"))) #convert received json string format into python dict
+    print("message received: ", subscriber_dict_car) #print received message
+    Fahrzeug_ID=subscriber_dict_car["Fahrzeug_ID"]
+    print("Fahrzeug_ID:", Fahrzeug_ID)
+    Ladestation=subscriber_dict_car["Ladestation"]
+    print("Ladestation: ", Ladestation)
+    
+        
+def callback_garage(client, userdata, message):  #callback function to receive every published message
+    global subscriber_dict_garage
+    global Parkreihe_Zustand
+    global Parkreihe_Ladestation
+    subscriber_dict_garage = json.loads(str(message.payload.decode("utf-8"))) #convert received json string format into python dict
+    print("message received: ", subscriber_dict_garage) #print received message
+    Parkreihe_Zustand=subscriber_dict_garage["Parkreihe Zustand"]#Zusatnd abfragen
+    print("Parkreihe_Zustand: ", Parkreihe_Zustand)
+    Parkreihe_Ladestation=subscriber_dict_garage["Ladestation Zustand"]#Ladestation abfragen
+    print("Parkreihe_Ladestation: ", Parkreihe_Ladestation)
+    
+
+broker_address="983072be-6928-4aa5-94db-b538ea35100f.ka.bw-cloud-instance.org" #broker adress
+client = mqtt.Client("Manger_Timo1") #create new instance
+client.message_callback_add("IoTParking/Car", callback_car)  #attach on_message function to a callback function
+client.message_callback_add("IoTParking/Garage", callback_garage)  #attach on_message function to a callback function
+client.connect(broker_address) #connect to broker
+client.loop_start() #start the client loop to make it always running
+client.subscribe(Topics) #subscribe to topic
+
+
+try:
+    while True:  
+        if(Fahrzeug_ID!=-1):                                         #neues Fahrzeug?
+            for i in range(0,7):                        
+                if(Parkreihe_Zustand[i]==0):                         #freier Parkplatz?              
+                    if(Parkreihe_Ladestation[i]==Ladestation):       #Ladestation wie gewuenscht?
+                        Parkplatz_ID[i]=Fahrzeug_ID
+                        frei=True
+                        break
+                frei=False
+            #Luecke frei?
+            if(frei):
+                pub_frei(i,Fahrzeug_ID)
+            else:
+                pub_nfrei(Fahrzeug_ID)
+            Fahrzeug_ID = -1                                    #back to default
+        print("Keine neue Anfrage")      
+        time.sleep(5) #sleep or wait for 5s before continuing to the next loop
+        
+        
+except KeyboardInterrupt:
+    print("process interrupted by a keyboard input")
+    print("process stop")
+    client.loop_stop() #stop the client loop
+    client.disconnect() # disconnect gracefully client.disconnect() 
