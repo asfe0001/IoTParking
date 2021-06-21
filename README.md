@@ -1,5 +1,6 @@
 # IoTParking
 IoT-Parking-Projekt: 
-# Timo Norberg
-Ferhat
-*Maurice Forneck 
+## Developers
+* Ferhat Aslan
+* Maurice Forneck 
+* Timo Norberg
