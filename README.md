@@ -1,5 +1,5 @@
 # IoTParking
 IoT-Parking-Projekt: 
-Timo Norberg
+# Timo Norberg
 Ferhat
 Maurice
